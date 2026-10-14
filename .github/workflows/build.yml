@@ -1,0 +1,44 @@
+name: Build Field Camera unsigned IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show installed Xcode
+        run: xcodebuild -version
+      - name: Compile simulator app
+        run: |
+          set -euo pipefail
+          xcodebuild -project FieldCamera.xcodeproj -scheme FieldCamera \
+            -configuration Debug -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build
+      - name: Build unsigned device archive
+        run: |
+          set -euo pipefail
+          xcodebuild -project FieldCamera.xcodeproj -scheme FieldCamera \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/FieldCamera.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' archive
+      - name: Package IPA for AltStore re-signing
+        run: |
+          set -euo pipefail
+          mkdir -p build/ipa/Payload
+          cp -R build/FieldCamera.xcarchive/Products/Applications/FieldCamera.app build/ipa/Payload/
+          test -f build/ipa/Payload/FieldCamera.app/FieldCamera
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' build/ipa/Payload/FieldCamera.app/Info.plist
+          cd build/ipa
+          /usr/bin/zip -qry ../FieldCamera-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FieldCamera-unsigned-IPA
+          path: build/FieldCamera-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
