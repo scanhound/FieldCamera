@@ -17,13 +17,13 @@ Native iPhone camera project, version 0.1.0. Requires iOS 16 or later.
 
 ## Verification status — read this first
 
-**Implemented in source, not yet proven on an iPhone.** This package was created on Windows without Xcode, an Apple SDK, or a connected iPhone test session.
+**Compiled successfully; not yet tested on an iPhone.** The simulator build and unsigned iPhone archive passed on GitHub macOS with Xcode 16.4 / iOS SDK 18.5. [Successful build](https://github.com/scanhound/FieldCamera/actions/runs/38488033999). The built `FieldCamera-unsigned.ipa` is now available locally alongside this source ZIP. Windows was used to prepare and upload the project.
 
 Checked here: project syntax using an OpenStep parser; source references and shared scheme; permissions plist; workflow YAML and build/package paths; source review; ZIP contents. See VALIDATION.md.
 
-**Not performed:** Swift/Apple SDK compilation, GitHub workflow execution, generation of a real IPA, AltStore signing/installation, camera launch timing, recorded 1080p30 metadata, audible sound, sync, focus/zoom behavior, meter accuracy, album creation/readback, interruption handling, long recordings, heat or battery tests. A passing cloud build checks compilation, not these hardware behaviors.
+**Not performed:** AltStore signing/installation, camera launch timing, recorded 1080p30 metadata, audible sound, sync, focus/zoom behavior, meter accuracy, album creation/readback, interruption handling, long recordings, heat or battery tests. A passing cloud build checks compilation, not these hardware behaviors.
 
-The ZIP is a **source project**, not an installable IPA. No GitHub repository has been created or published and no accounts have been signed into.
+The ZIP is a **source project**, not an installable IPA. The project is published at [scanhound/FieldCamera](https://github.com/scanhound/FieldCamera). The IPA has been downloaded and checked as an ARM64 iPhone executable with the required permissions. It is unsigned and still needs AltStore signing before installation.
 
 AirPods 4 ANC microphone/routing and DJI OM6 hardware controls are **later experimental work**. There is no implementation or promise of compatibility for either. Start testing with the iPhone microphone and on-screen controls.
 
@@ -36,9 +36,11 @@ Feasible based on official documentation, checked October 13, 2026; this particu
 3. Use **AltStore Classic**, following the [official Windows installation guide](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows), not AltStore PAL. It requires AltServer, Apple's iTunes/iCloud setup, device trust, and Developer Mode on iOS 16+.
 4. With a free Apple ID, apps expire in **7 days** and must be refreshed. Apple's free limit is **3 sideloaded apps**, including AltStore. Keep AltServer available and use Refresh All before expiry. [AltStore Getting Started](https://faq.altstore.io/altstore-classic/your-altstore).
 
-No paid Apple Developer membership is needed for this proposed personal sideloading route. It is not App Store distribution. GitHub and Apple sign-ins still need to be completed by you.
+No paid Apple Developer membership is needed for this proposed personal sideloading route. It is not App Store distribution. Apple sign-in for AltStore still needs to be completed by you.
 
-## Get your first build from Windows
+## Build from Windows
+
+Your first successful build is already available at the link above. The following steps are for reproducing a build in a new repository.
 
 1. Extract FieldCamera-SpotNews-Source.zip to a convenient folder. The project folder is **FieldCamera**. Keep the hidden `.github` folder; it contains the build workflow.
 2. Install [GitHub Desktop](https://desktop.github.com/) and sign in to a free GitHub account.
