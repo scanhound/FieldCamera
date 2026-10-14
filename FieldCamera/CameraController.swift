@@ -108,9 +108,7 @@ final class CameraController: NSObject, ObservableObject, AVCaptureFileOutputRec
         if camera.isExposureModeSupported(.continuousAutoExposure) { camera.exposureMode = .continuousAutoExposure }
         camera.unlockForConfiguration()
         device = camera
-        audio.audioSettings = [AVFormatIDKey: kAudioFormatLinearPCM, AVLinearPCMBitDepthKey: 16,
-                               AVLinearPCMIsFloatKey: false, AVLinearPCMIsBigEndianKey: false,
-                               AVLinearPCMIsNonInterleaved: false]
+        // iOS supplies native PCM; audioSettings is a macOS-only API.
         audio.setSampleBufferDelegate(self, queue: queue)
         if let connection = movie.connection(with: .video) {
             if movie.availableVideoCodecTypes.contains(.h264) {
@@ -193,28 +191,54 @@ final class CameraController: NSObject, ObservableObject, AVCaptureFileOutputRec
         guard now - lastMeterTime >= 0.08 else { return }
         lastMeterTime = now
         guard let description = CMSampleBufferGetFormatDescription(sampleBuffer),
-              let pointer = CMAudioFormatDescriptionGetStreamBasicDescription(description),
-              let block = CMSampleBufferGetDataBuffer(sampleBuffer) else { return }
+              let pointer = CMAudioFormatDescriptionGetStreamBasicDescription(description) else { return }
         let format = pointer.pointee
-        guard format.mFormatID == kAudioFormatLinearPCM, format.mBitsPerChannel == 16,
-              format.mFormatFlags & kAudioFormatFlagIsFloat == 0,
-              format.mFormatFlags & kAudioFormatFlagIsNonInterleaved == 0 else { return }
+        guard format.mFormatID == kAudioFormatLinearPCM,
+              format.mFormatFlags & kAudioFormatFlagIsBigEndian == 0 else { return }
+        let floating = format.mFormatFlags & kAudioFormatFlagIsFloat != 0
+        let signed = format.mFormatFlags & kAudioFormatFlagIsSignedInteger != 0
+        let bits = Int(format.mBitsPerChannel)
+        guard (floating && (bits == 32 || bits == 64)) || (signed && (bits == 16 || bits == 32)) else { return }
         let channels = Int(format.mChannelsPerFrame)
         guard channels > 0 else { return }
-        let length = CMBlockBufferGetDataLength(block)
-        guard length > 0, length % 2 == 0 else { return }
-        var samples = [Int16](repeating: 0, count: length / 2)
-        let result = samples.withUnsafeMutableBytes {
-            CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: length, destination: $0.baseAddress!)
-        }
-        guard result == kCMBlockBufferNoErr, samples.count >= channels else { return }
+        var listSize = 0
+        CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer,
+            bufferListSizeNeededOut: &listSize, bufferListOut: nil, bufferListSize: 0,
+            blockBufferAllocator: nil, blockBufferMemoryAllocator: nil, flags: 0, blockBufferOut: nil)
+        guard listSize > 0 else { return }
+        let memory = UnsafeMutableRawPointer.allocate(byteCount: listSize, alignment: MemoryLayout<AudioBufferList>.alignment)
+        defer { memory.deallocate() }
+        let list = memory.bindMemory(to: AudioBufferList.self, capacity: 1)
+        var retainedBlock: CMBlockBuffer?
+        let result = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer,
+            bufferListSizeNeededOut: nil, bufferListOut: list, bufferListSize: listSize,
+            blockBufferAllocator: nil, blockBufferMemoryAllocator: nil,
+            flags: UInt32(kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment), blockBufferOut: &retainedBlock)
+        guard result == noErr else { return }
         var sums = [Double](repeating: 0, count: channels)
-        for (index, sample) in samples.enumerated() {
-            let value = Double(sample) / 32768
-            sums[index % channels] += value * value
+        var counts = [Int](repeating: 0, count: channels)
+        var channelBase = 0
+        for buffer in UnsafeMutableAudioBufferListPointer(list) {
+            let bufferChannels = Int(buffer.mNumberChannels)
+            guard let data = buffer.mData, bufferChannels > 0 else { continue }
+            let sampleCount = Int(buffer.mDataByteSize) / (bits / 8)
+            for index in 0..<sampleCount {
+                let channel = channelBase + index % bufferChannels
+                guard channel < channels else { continue }
+                let value: Double
+                if floating && bits == 32 { value = Double(data.assumingMemoryBound(to: Float.self)[index]) }
+                else if floating { value = data.assumingMemoryBound(to: Double.self)[index] }
+                else if bits == 16 { value = Double(data.assumingMemoryBound(to: Int16.self)[index]) / 32768 }
+                else { value = Double(data.assumingMemoryBound(to: Int32.self)[index]) / 2147483648 }
+                sums[channel] += value * value
+                counts[channel] += 1
+            }
+            channelBase += bufferChannels
         }
-        let frames = Double(samples.count / channels)
-        let db = sums.map { max(-60, 20 * log10(max(0.000001, sqrt($0 / frames)))) }
+        withExtendedLifetime(retainedBlock) {}
+        let db = sums.enumerated().map { channel, sum in
+            max(-60, 20 * log10(max(0.000001, sqrt(sum / Double(max(1, counts[channel]))))))
+        }
         publish { $0.levels = db }
     }
     func retrySaves() { busy = true; queue.async { self.savePending() } }
