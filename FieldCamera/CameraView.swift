@@ -6,10 +6,11 @@ struct CameraView: View {
     @Environment(\.scenePhase) private var phase
     var body: some View {
         GeometryReader { geometry in
+            let portrait = geometry.size.height > geometry.size.width
             ZStack {
                 Color.black.ignoresSafeArea()
                 CameraPreview(camera: camera).ignoresSafeArea()
-                VStack(spacing: 12) {
+                VStack(spacing: portrait ? 8 : 12) {
                     HStack {
                         Text("FIELD CAMERA").font(.headline)
                         Spacer()
@@ -17,7 +18,7 @@ struct CameraView: View {
                         if camera.recording { Text("● REC").foregroundStyle(.red) }
                     }
                     Spacer()
-                    Text(camera.status).font(.callout).padding(8)
+                    Text(camera.status).font(portrait ? .caption : .callout).padding(portrait ? 4 : 8)
                         .background(.black.opacity(0.6)).clipShape(RoundedRectangle(cornerRadius: 8))
                     if !camera.levels.isEmpty {
                         HStack {
@@ -34,19 +35,25 @@ struct CameraView: View {
                                     Text("CH \(index + 1)  \(Int(db)) dBFS").font(.caption2.monospaced())
                                 }
                             }
-                        }.padding(8).background(.black.opacity(0.6))
+                        }.padding(portrait ? 6 : 8)
+                            .frame(maxWidth: portrait ? 220 : nil)
+                            .background(.black.opacity(0.6))
                     }
-                    HStack(spacing: 18) {
+                    HStack(spacing: portrait ? 10 : 18) {
                         Text(String(format: "%.1f×", camera.zoom)).monospacedDigit()
                         Slider(value: Binding(get: { camera.zoom }, set: { camera.setZoom($0) }),
                                in: 1...camera.maxZoom).disabled(!camera.ready)
+                            .frame(width: portrait ? min(140, geometry.size.width * 0.34) : nil)
                         Button(action: { camera.toggleRecording() }) {
                             Image(systemName: camera.recording ? "stop.fill" : "circle.fill")
-                                .font(.system(size: 30)).foregroundStyle(.red)
-                                .frame(width: 64, height: 64).background(.white).clipShape(Circle())
+                                .font(.system(size: portrait ? 24 : 30)).foregroundStyle(.red)
+                                .frame(width: portrait ? 48 : 64, height: portrait ? 48 : 64)
+                                .background(.white).clipShape(Circle())
                         }.disabled(!camera.ready || camera.busy)
                             .accessibilityLabel(camera.recording ? "Stop recording" : "Record")
-                    }.padding(12).background(.black.opacity(0.65)).clipShape(RoundedRectangle(cornerRadius: 16))
+                    }.padding(portrait ? 8 : 12).background(.black.opacity(0.65))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .frame(maxWidth: .infinity, alignment: portrait ? .trailing : .center)
                     HStack {
                         Text("Tap picture to focus").font(.caption)
                         Spacer()
