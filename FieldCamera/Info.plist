@@ -24,7 +24,8 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
+	<key>NSBluetoothAlwaysUsageDescription</key><string>Discover accessible OM6 Bluetooth services and log raw control test data.</string>
+<key>NSCameraUsageDescription</key>
 	<string>Field Camera uses the rear camera to record spot news video.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Field Camera records sound with your news video and displays microphone levels.</string>
@@ -44,3 +45,4 @@
 	</array>
 </dict>
 </plist>
+

@@ -3,6 +3,9 @@ import AVFoundation
 
 struct CameraView: View {
     @StateObject private var camera = CameraController()
+    @StateObject private var monitor = MicMonitor()
+    @StateObject private var bluetooth = BluetoothDiagnostic()
+    @State private var tests = false
     @Environment(\.scenePhase) private var phase
     var body: some View {
         GeometryReader { geometry in
@@ -13,11 +16,14 @@ struct CameraView: View {
                 VStack(spacing: compact ? 8 : 12) {
                     HStack {
                         Text("FIELD CAMERA").font(.headline)
+                        Button("Tests") { tests = true }.disabled(camera.recording || camera.busy)
                         Spacer()
                         Text("1080p · 30 fps").font(.caption.monospaced())
                         if camera.recording { Text("● REC").foregroundStyle(.red) }
                     }
                     Spacer()
+                    if monitor.active { Text("MONITOR ON · headphones").font(.caption).foregroundStyle(.green) }
+                    else if monitor.status != "Monitor off" { Text(monitor.status).font(.caption).foregroundStyle(.orange) }
                     Text(camera.status).font(compact ? .caption : .callout).padding(compact ? 4 : 8)
                         .background(.black.opacity(0.6)).clipShape(RoundedRectangle(cornerRadius: 8))
                     if !camera.levels.isEmpty {
@@ -65,10 +71,15 @@ struct CameraView: View {
                 }.padding().foregroundStyle(.white)
             }
         }
+        .sheet(isPresented: $tests, onDismiss: { bluetooth.stop(); camera.start() }) {
+            DiagnosticView(monitor: monitor, bluetooth: bluetooth, startMonitor: {
+                camera.pauseForMonitor { monitor.start(); camera.start() }
+            })
+        }
         .task { camera.start() }
         .onChange(of: phase) { value in
-            if value == .active { camera.start() }
-            else if value == .background { camera.suspend() }
+            if value == .active && !tests { camera.start() }
+            else if value == .background { monitor.stop(); bluetooth.stop(); camera.suspend() }
         }
     }
 }
@@ -110,3 +121,5 @@ final class PreviewView: UIView {
         camera?.focus(at: point)
     }
 }
+
+

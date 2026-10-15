@@ -78,6 +78,11 @@ final class CameraController: NSObject, ObservableObject, AVCaptureFileOutputRec
         }
     }
     private func configure() throws {
+        // Share a stable session with the optional monitor; capture must not overwrite it.
+        session.automaticallyConfiguresApplicationAudioSession = false
+        let sharedAudio = AVAudioSession.sharedInstance()
+        try sharedAudio.setCategory(.playAndRecord, mode: .default, options: [.allowBluetoothA2DP, .allowBluetooth])
+        try sharedAudio.setActive(true)
         session.beginConfiguration()
         defer { session.commitConfiguration() }
         // Remove partial configuration before retrying after an error.
@@ -119,6 +124,14 @@ final class CameraController: NSObject, ObservableObject, AVCaptureFileOutputRec
         configured = true
         let maximum = max(1, min(6, Double(camera.activeFormat.videoMaxZoomFactor)))
         publish { $0.maxZoom = maximum }
+    }
+    func pauseForMonitor(_ completion: @escaping () -> Void) {
+        queue.async {
+            guard !self.movie.isRecording && !self.saving else { return }
+            if self.session.isRunning { self.session.stopRunning() }
+            self.publish { $0.ready = false; $0.status = "Audio test — capture paused" }
+            DispatchQueue.main.async(execute: completion)
+        }
     }
     func suspend() {
         queue.async {
@@ -289,3 +302,5 @@ final class CameraController: NSObject, ObservableObject, AVCaptureFileOutputRec
     }
     private func failure(_ message: String) -> NSError { NSError(domain: "FieldCamera", code: 1, userInfo: [NSLocalizedDescriptionKey: message]) }
 }
+
+
