@@ -1,3 +1,7 @@
+# Current update: continuous monitoring and BLE diagnostics
+
+Read PROTOTYPE-TEST-GUIDE.md first. This changed source has NOT been compiled or tested on an iPhone. Historical claims below describe the earlier version only.
+
 # Field Camera — Spot News Edition
 
 Native iPhone camera project, version 0.1.0. Requires iOS 16 or later.
@@ -85,3 +89,4 @@ The cloud workflow uses the runner's default Xcode and reports its version. Ther
 ## Known limits
 
 Rear wide camera only; no lens switching, manual exposure/shutter/white balance, focus lock toggle, timecode, external button integration, Bluetooth microphone selection or audio monitoring. Audio defaults to the system-selected capture microphone and needs real-device confirmation. Fixed frame duration is requested; sustained performance still needs testing. Stabilization is requested when supported and may crop the image. No background recording. Full Photos access is required for named-album saving. Low storage and interruptions may leave incomplete recovery files. A crash after Photos commits but before local cleanup may leave a duplicate on retry. There is no real-device footage included and no claim of broadcast qualification.
+
