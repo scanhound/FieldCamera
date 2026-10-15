@@ -1,5 +1,11 @@
 // !$*UTF8*$!
 { archiveVersion = 1; classes = {}; objectVersion = 56; objects = {
+000000000000000000000069 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticView.swift; sourceTree = "<group>"; };
+0000000000000000000000CD = { isa = PBXBuildFile; fileRef = 000000000000000000000069; };
+000000000000000000000068 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDiagnostic.swift; sourceTree = "<group>"; };
+0000000000000000000000CC = { isa = PBXBuildFile; fileRef = 000000000000000000000068; };
+000000000000000000000067 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicMonitor.swift; sourceTree = "<group>"; };
+0000000000000000000000CB = { isa = PBXBuildFile; fileRef = 000000000000000000000067; };
 000000000000000000000064 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldCameraApp.swift; sourceTree = "<group>"; };
 0000000000000000000000C8 = { isa = PBXBuildFile; fileRef = 000000000000000000000064; };
 000000000000000000000065 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
@@ -9,9 +15,9 @@
 00000000000000000000000A = { isa = PBXFileReference; explicitFileType = wrapper.application; path = FieldCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 00000000000000000000000B = { isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 000000000000000000000001 = { isa = PBXGroup; children = (000000000000000000000002, 000000000000000000000003,); sourceTree = "<group>"; };
-000000000000000000000002 = { isa = PBXGroup; children = (000000000000000000000064, 000000000000000000000065, 000000000000000000000066, 00000000000000000000000B,); path = FieldCamera; sourceTree = "<group>"; };
+000000000000000000000002 = { isa = PBXGroup; children = (000000000000000000000064, 000000000000000000000065, 000000000000000000000066, 000000000000000000000069, 000000000000000000000068, 000000000000000000000067, 00000000000000000000000B,); path = FieldCamera; sourceTree = "<group>"; };
 000000000000000000000003 = { isa = PBXGroup; children = (00000000000000000000000A,); name = Products; sourceTree = "<group>"; };
-000000000000000000000004 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (0000000000000000000000C8, 0000000000000000000000C9, 0000000000000000000000CA,); runOnlyForDeploymentPostprocessing = 0; };
+000000000000000000000004 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (0000000000000000000000C8, 0000000000000000000000C9, 0000000000000000000000CA, 0000000000000000000000CD, 0000000000000000000000CC, 0000000000000000000000CB,); runOnlyForDeploymentPostprocessing = 0; };
 000000000000000000000005 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 000000000000000000000006 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 000000000000000000000007 = { isa = PBXNativeTarget; buildConfigurationList = 00000000000000000000001F; buildPhases = (000000000000000000000004, 000000000000000000000005, 000000000000000000000006,); buildRules = (); dependencies = (); name = FieldCamera; productName = FieldCamera; productReference = 00000000000000000000000A; productType = "com.apple.product-type.application"; };
@@ -23,3 +29,4 @@
 00000000000000000000001E = { isa = XCConfigurationList; buildConfigurations = (000000000000000000000014, 000000000000000000000015,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 00000000000000000000001F = { isa = XCConfigurationList; buildConfigurations = (000000000000000000000016, 000000000000000000000017,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 }; rootObject = 000000000000000000000008; }
+
